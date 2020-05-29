@@ -5,14 +5,14 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
-static char *font = "TerminessTTFNerdFontMono:pixelsize=20:antialias=true:autohint=true";
+static char *font = "UbuntuMono Nerd Font:pixelsize=20:antialias=true:autohint=true";
 /* Spare fonts */
 static char *font2[] = {
 /*	"Inconsolata for Powerline:pixelsize=12:antialias=true:autohint=true", */
 /*	"Hack Nerd Font Mono:pixelsize=11:antialias=true:autohint=true", */
 };
 
-static int borderpx = 2;
+static int borderpx = 0;
 
 /*
  * What program is execed by st depends of these precedence rules:
@@ -91,7 +91,7 @@ char *termname = "st-256color";
 unsigned int tabspaces = 8;
 
 /* bg opacity */
-float alpha = 0.9;
+float alpha = 0.75;
 
 /* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
@@ -193,14 +193,14 @@ static Shortcut shortcuts[] = {
 	{ ControlMask,          XK_j,           zoom,           {.f = +1} },
 	{ ControlMask,          XK_k,           zoom,           {.f = -1} },
 	{ ControlMask,          XK_Home,        zoomreset,      {.f =  0} },
-	{ ControlMask,          XK_c,           clipcopy,       {.i =  0} },
-	{ ControlMask,          XK_v,           clippaste,      {.i =  0} },
+	{ MODKEY,               XK_c,           clipcopy,       {.i =  0} },
+	{ MODKEY,               XK_v,           clippaste,      {.i =  0} },
 	{ TERMMOD,              XK_Y,           selpaste,       {.i =  0} },
 	{ ShiftMask,            XK_Insert,      selpaste,       {.i =  0} },
-	{ MODKEY,               XK_k,           kscrollup,      {.i = -1} },
-	{ MODKEY,               XK_j,           kscrolldown,    {.i = -1} },
-	{ MODKEY,               XK_i,           kscrollup,      {.i = -2} },
-	{ MODKEY,               XK_u,           kscrolldown,    {.i = -2} },
+	{ MODKEY,               XK_k,           kscrollup,      {.i =  1} },
+	{ MODKEY,               XK_j,           kscrolldown,    {.i =  1} },
+	{ MODKEY,               XK_i,           kscrollup,      {.i = -1} },
+	{ MODKEY,               XK_u,           kscrolldown,    {.i = -1} },
 };
 
 /*
