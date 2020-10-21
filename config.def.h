@@ -5,7 +5,7 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
-static char *font = "UbuntuMono Nerd Font:pixelsize=20:antialias=true:autohint:true";
+static char *font = "Ubuntu Mono Ligaturized:pixelsize=20:antialias=true:autohint:true";
 /* Spare fonts */
 static char *font2[] = {
 	"Symbola:pixelsize=20:antialias=true:autohint:true"
@@ -92,7 +92,7 @@ char *termname = "st-256color";
 unsigned int tabspaces = 8;
 
 /* bg opacity */
-float alpha = 0.8;
+float alpha = 0.7;
 
 ///* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
@@ -130,7 +130,7 @@ static const char *colorname[] = {
   [4] = "#bd93f9", /* blue    */
   [5] = "#ff79c6", /* magenta */
   [6] = "#8be9fd", /* cyan    */
-  [7] = "#dddddd", /* white   */
+  [7] = "#ffffff", /* white   */
 
   /* 8 bright colors */
   [8]  = "#777a8d", /* black   */
@@ -144,7 +144,7 @@ static const char *colorname[] = {
 
   /* special colors */
   [256] = "#282a36", /* background */
-  [257] = "#f8f8f2", /* foreground */
+  [257] = "#ffffff", /* foreground */
 };
 
 
