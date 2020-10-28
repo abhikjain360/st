@@ -5,15 +5,11 @@
  *
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
-static char *font = "Ubuntu Mono Ligaturized:pixelsize=20:antialias=true:autohint:true";
-/* Spare fonts */
+static char *font = "Fira Code:pixelsize=20:antialias=true:autohint=true";
 static char *font2[] = {
-	"Symbola:pixelsize=20:antialias=true:autohint:true"
-/*	"Inconsolata for Powerline:pixelsize=12:antialias=true:autohint=true", */
-/*	"Hack Nerd Font Mono:pixelsize=11:antialias=true:autohint=true", */
+    "Fira Code:pixelsize=20:antialias=true:autohint=true"
 };
-
-static int borderpx = 0;
+static int borderpx = 10;
 
 /*
  * What program is execed by st depends of these precedence rules:
@@ -27,7 +23,7 @@ static char *shell = "/bin/zsh";
 char *utmp = NULL;
 /* scroll program: to enable use a string like "scroll" */
 char *scroll = NULL;
-char *stty_args = "stty raw pass8 nl -echo -iexten -cstopb 38400";
+char *stty_args = "stty raw tab pass8 nl -echo -iexten -cstopb 38400";
 
 /* identification sequence returned in DA and DECID */
 char *vtiden = "\033[?6c";
@@ -50,15 +46,30 @@ static unsigned int tripleclicktimeout = 600;
 /* alt screens */
 int allowaltscreen = 1;
 
-/* frames per second st should at maximum draw to the screen */
-static unsigned int xfps = 120;
-static unsigned int actionfps = 30;
+/* allow certain non-interactive (insecure) window operations such as:
+   setting the clipboard text */
+int allowwindowops = 0;
+
+/*
+ * draw latency range in ms - from new content/keypress/etc until drawing.
+ * within this range, st draws when content stops arriving (idle). mostly it's
+ * near minlatency, but it waits longer for slow updates to avoid partial draw.
+ * low minlatency will tear/flicker more, as it can "detect" idle too early.
+ */
+static double minlatency = 8;
+static double maxlatency = 33;
+
+/*
+ * Synchronized-Update timeout in ms
+ * https://gitlab.com/gnachman/iterm2/-/wikis/synchronized-updates-spec
+ */
+static uint su_timeout = 200;
 
 /*
  * blinking timeout (set to 0 to disable blinking) for the terminal blinking
  * attribute.
  */
-static unsigned int blinktimeout = 800;
+static unsigned int blinktimeout = 500;
 
 /*
  * thickness of underline and bar cursors
@@ -89,40 +100,39 @@ char *termname = "st-256color";
  *
  *	stty tabs
  */
-unsigned int tabspaces = 8;
+unsigned int tabspaces = 4;
 
 /* bg opacity */
-float alpha = 0.7;
+float alpha = 0.8;
 
-///* Terminal colors (16 first used in escape sequence) */
+/* Terminal colors (16 first used in escape sequence) */
 static const char *colorname[] = {
-//	/* 8 normal colors */
-//	"black",
-//	"red3",
-//	"green3",
-//	"yellow3",
-//	"blue2",
-//	"magenta3",
-//	"cyan3",
-//	"gray90",
-//
-//	/* 8 bright colors */
-//	"gray50",
-//	"red",
-//	"green",
-//	"yellow",
-//	"#5c5cff",
-//	"magenta",
-//	"cyan",
-//	"white",
-//
-//	[255] = 0,
-//
-//	/* more colors can be added after 255 to use with DefaultXX */
-//	"#cccccc",
-//	"#555555",
-//	"black",
-//};
+	// [> 8 normal colors <]
+	// "black",
+	// "red3",
+	// "green3",
+	// "yellow3",
+	// "blue2",
+	// "magenta3",
+	// "cyan3",
+	// "gray90",
+    //
+	// [> 8 bright colors <]
+	// "gray50",
+	// "red",
+	// "green",
+	// "yellow",
+	// "#5c5cff",
+	// "magenta",
+	// "cyan",
+	// "white",
+    //
+	// [255] = 0,
+    //
+	// [> more colors can be added after 255 to use with DefaultXX <]
+	// "#cccccc",
+	// "#555555",
+
   [0] = "#000000", /* black   */
   [1] = "#ff5555", /* red     */
   [2] = "#50fa7b", /* green   */
@@ -148,14 +158,10 @@ static const char *colorname[] = {
 };
 
 
-
 /*
  * Default colors (colorname index)
  * foreground, background, cursor, reverse cursor
  */
-//unsigned int defaultfg = 7;
-//unsigned int defaultbg = 258;
-//static unsigned int defaultcs = 256;
 unsigned int defaultfg = 257;
 unsigned int defaultbg = 256;
 static unsigned int defaultcs = 257;
@@ -204,13 +210,15 @@ static uint forcemousemod = ShiftMask;
 static MouseShortcut mshortcuts[] = {
 	/* mask                 button   function        argument       release */
 	{ XK_ANY_MOD,           Button2, selpaste,       {.i = 0},      1 },
+	{ ShiftMask,            Button4, ttysend,        {.s = "\033[5;2~"} },
 	{ XK_ANY_MOD,           Button4, ttysend,        {.s = "\031"} },
+	{ ShiftMask,            Button5, ttysend,        {.s = "\033[6;2~"} },
 	{ XK_ANY_MOD,           Button5, ttysend,        {.s = "\005"} },
 };
 
 /* Internal keyboard shortcuts. */
 #define MODKEY Mod1Mask
-#define TERMMOD (ControlMask|ShiftMask)
+#define TERMMOD (Mod1Mask|ShiftMask)
 
 static Shortcut shortcuts[] = {
 	/* mask                 keysym          function        argument */
@@ -218,17 +226,16 @@ static Shortcut shortcuts[] = {
 	{ ControlMask,          XK_Print,       toggleprinter,  {.i =  0} },
 	{ ShiftMask,            XK_Print,       printscreen,    {.i =  0} },
 	{ XK_ANY_MOD,           XK_Print,       printsel,       {.i =  0} },
-	{ MODKEY|ShiftMask,     XK_J,           zoom,           {.f = +1} },
-	{ MODKEY|ShiftMask,     XK_K,           zoom,           {.f = -1} },
-	{ ControlMask,          XK_Home,        zoomreset,      {.f =  0} },
-	{ MODKEY,               XK_c,           clipcopy,       {.i =  0} },
-	{ MODKEY,               XK_v,           clippaste,      {.i =  0} },
+	{ Mod1Mask,             XK_minus,       zoom,           {.f = +1} },
+	{ TERMMOD,              XK_plus,        zoom,           {.f = -1} },
+	{ TERMMOD,              XK_Home,        zoomreset,      {.f =  0} },
+	{ Mod1Mask,             XK_c,           clipcopy,       {.i =  0} },
+	{ Mod1Mask,             XK_v,           clippaste,      {.i =  0} },
 	{ TERMMOD,              XK_Y,           selpaste,       {.i =  0} },
 	{ ShiftMask,            XK_Insert,      selpaste,       {.i =  0} },
-	{ MODKEY,               XK_k,           kscrollup,      {.i =  1} },
-	{ MODKEY,               XK_j,           kscrolldown,    {.i =  1} },
-	{ MODKEY,               XK_i,           kscrollup,      {.i = -1} },
-	{ MODKEY,               XK_u,           kscrolldown,    {.i = -1} },
+	{ TERMMOD,              XK_Num_Lock,    numlock,        {.i =  0} },
+	{ MODKEY,               XK_j,           kscrolldown,    {.i = -1} },
+	{ MODKEY,               XK_k,           kscrollup,      {.i = -1} },
 };
 
 /*
